@@ -1,0 +1,15 @@
+Dynamic security testing complements static analysis by executing code with various inputs to uncover runtime vulnerabilities. One effective technique is fuzz testing, which involves providing random or semistructured inputs to a program to identify crashes, unexpected behavior, or security flaws. In this context, fuzz testing developed in Exercise 2 using Atheris can be integrated into a CI/CD pipeline. 
+To incorporate fuzz testing into the pipeline, a dedicated job named fuzz-test is created in the .gitlab-ci.yml file. This job is responsible for installing dependencies, executing the fuzzing script, and limiting execution time to ensure predictable pipeline duration. Since fuzzing can run indefinitely, a timeout mechanism is used to constrain execution to a fixed duration, such as five minutes. 
+The YAML configuration for this job may look as follows: 
+
+stages:
+  - security
+
+fuzz-test:
+  stage: security
+  image: python:3.11
+  script:
+    - timeout 5m python fuzz_test.py
+  allow_failure: false
+
+ fuzz_test.py is the file that contains the fuzzing code from Exercise 2.

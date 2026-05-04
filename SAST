@@ -1,0 +1,20 @@
+Static Application Security Testing (SAST) tools are essential for identifying vulnerabilities in source code before deployment. Two widely used open-source SAST tools suitable for Python are Bandit and Semgrep. Both tools analyze code statically without executing it, allowing developers to detect security flaws early in the development lifecycle. 
+Bandit is specifically designed for Python and focuses on identifying common security issues such as hardcoded credentials, insecure function usage (e.g., eval), weak cryptographic practices, and injection vulnerabilities. It operates by scanning the Abstract Syntax Tree (AST) of Python code, making it precise and efficient. Semgrep, on the other hand, is a more flexible tool that supports multiple languages and allows developers to define custom rules. While Semgrep is powerful, it may require additional configuration effort compared to Bandit. 
+Bandit is a particularly suitable choice for this task due to its simplicity, Python-specific focus, and ease of integration into CI/CD pipelines. It produces clear, readable reports and can be configured to fail the build when high-severity issues are detected, making it ideal for automated enforcement. 
+To integrate Bandit into a GitLab CI/CD pipeline, a job named sast can be defined in the .gitlab-ci.yml file. 
+This job installs Bandit and runs it against the codebase: 
+
+YAML
+stages:
+  - security
+
+sast:
+  stage: security
+  image: python:3.11
+  before_script:
+    - pip install bandit
+  script:
+    - bandit -r .
+  allow_failure: false
+
+This job runs Bandit on the whole project. If Bandit finds a serious security issue, the pipeline can fail so the team fixes the problem before merging the code.

@@ -1,0 +1,27 @@
+Policy enforcement in a CI/CD pipeline ensures that security checks have tangible consequences by preventing insecure code from progressing through the development lifecycle. In this task, enforcement focuses on two conditions: failing the pipeline if high-severity vulnerabilities are detected during static analysis, and failing if crashes occur during fuzz testing. 
+For the sast job, tools like Bandit can be configured to return a non-zero exit code when issues of a specified severity are found. By default, CI/CD systems treat non-zero exit codes as job failures. Bandit supports severity filtering through command-line flags such as -ll, which limits reporting to medium and highseverity issues. When such issues are detected, Bandit exits with an error code, automatically causing the pipeline stage to fail. This enforces a strict policy where code containing significant vulnerabilities cannot be merged or deployed. 
+For the fuzz-test job, enforcement is achieved through the natural behavior of fuzzing tools such as Atheris. When a crash or exception occurs during fuzzing, the process terminates abnormally and returns a non-zero exit status. This signals the CI/CD system that the job has failed. By ensuring that the fuzzing script does not suppress critical exceptions, crashes are properly propagated to the pipeline. 
+Additionally, CI/CD configuration settings can reinforce enforcement. For example: 
+•	Ensuring allow_failure: false (default) so failures stop the pipeline  
+•	Placing both jobs in required stages (e.g., test)  
+•	Using branch protection rules to block merging when pipelines fail  
+
+YAML FOr use:
+sast:
+  stage: security
+  image: python:3.11
+  before_script:
+    - pip install bandit
+  script:
+    - bandit -r . --severity-level high
+  allow_failure: false
+
+fuzz-test:
+  stage: security
+  image: python:3.11
+  script:
+    - timeout 5m python fuzz_test.py
+  allow_failure: false
+
+These mechanisms ensure that both static and dynamic security checks are mandatory gates rather than optional steps. Developers are required to resolve detected issues before code can proceed further. 
+In summary, effective policy enforcement relies on leveraging tool exit codes and CI/CD configuration to automatically halt the pipeline when security violations occur. This approach embeds security directly into the development workflow, ensuring continuous compliance and significantly reducing the risk of deploying vulnerable software. 
